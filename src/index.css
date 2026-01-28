@@ -22,4 +22,12 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+.app-shell {
+  max-width: 420px;
+  height: 100vh;
+  margin: 0 auto;
+  background: var(--color-dark);
+  overflow-y: auto;
+}
+
 

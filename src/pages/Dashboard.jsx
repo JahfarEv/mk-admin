@@ -314,9 +314,9 @@ export default function Dashboard() {
       console.log("🟡 SHOP DATA:", shop);
 
       const email =
-        "shop_" +
+      
         shop.place.toLowerCase().replace(/\s+/g, "_") +
-        "@mkfashion.com";
+        "@mkmenswear.com";
 
       // 1️⃣ Create shop auth account
       const userCredential = await createUserWithEmailAndPassword(
@@ -371,16 +371,32 @@ export default function Dashboard() {
             ⋯
           </span>
 
-          {openMenu && (
-            <div className="absolute right-0 mt-2 w-32 bg-black border border-gold/40 rounded-lg shadow-lg z-50">
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gold hover:text-black rounded-lg"
-              >
-                Logout
-              </button>
-            </div>
-          )}
+        {openMenu && (
+  <div className="absolute right-0 mt-2 w-36 bg-black border border-gold/40 rounded-lg shadow-lg z-50 overflow-hidden">
+
+    {/* SETTINGS */}
+    <button
+      onClick={() => {
+        setOpenMenu(false);
+        navigate("/settings");
+      }}
+      className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10"
+    >
+      ⚙️ Settings
+    </button>
+
+    <div className="h-px bg-white/10" />
+
+    {/* LOGOUT */}
+    <button
+      onClick={handleLogout}
+      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gold hover:text-black"
+    >
+      🚪 Logout
+    </button>
+  </div>
+)}
+
         </div>
       </div>
 

@@ -17,14 +17,13 @@
 //   );
 // }
 
-
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ShopList from "./pages/ShopList";
 import ShopDetails from "./pages/ShopDetails";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminSettings from "./pages/AdminSettings";
 
 // export default function App() {
 //   return (
@@ -67,8 +66,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 //   );
 // }
 
-
-
 export default function App() {
   return (
     <BrowserRouter>
@@ -99,6 +96,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ShopDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <AdminSettings />
               </ProtectedRoute>
             }
           />

@@ -472,6 +472,7 @@ import { useEffect, useState } from "react";
 import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { ref, get, set, child } from "firebase/database";
 import { auth, rtdb, secondaryAuth } from "../firebase";
+import AppHeader from "../components/AppHeader";
 
 export default function ShopList() {
   const [openModal, setOpenModal] = useState(false);
@@ -616,22 +617,34 @@ export default function ShopList() {
     <div className="min-h-screen bg-[var(--color-dark)] text-white flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[var(--color-dark)] border-b border-white/10 backdrop-blur-sm bg-opacity-95">
-        <div className="px-4 py-4 sm:px-6 md:px-8">
+        {/* <div className="px-4 py-4 sm:px-6 md:px-8">
           <p className="text-xs sm:text-sm tracking-widest text-gray-400 font-medium">
             MK FASHION ADMIN
           </p>
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mt-1">
             ALL SHOPS
           </h2>
-        </div>
-        <div className="flex items-center gap-3 mb-4 mx-3">
-          <button onClick={() => navigate(-1)}>←</button>
-          <h2 className="text-lg">Home</h2>
-        </div>
+        </div> */}
+
+        <AppHeader
+  title="Shops"
+  back
+  onBack={() => navigate(-1)}
+  right={
+    <button
+      className="text-[var(--color-gold)] text-lg"
+      onClick={() => setOpenModal(true)}
+    >
+      +
+    </button>
+  }
+/>
+
+        
         
         {/* Search Bar - Now visible on all screens */}
         <div className="px-4 pb-4 sm:px-6 md:px-8">
-          <div className="max-w-md">
+          {/* <div className="max-w-md">
             <input
               type="text"
               placeholder="Search shops by name, phone, or email..."
@@ -639,13 +652,23 @@ export default function ShopList() {
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
             />
-            {/* Search results info */}
             {searchQuery && (
               <div className="mt-2 text-sm text-gray-400">
                 Found {filteredShops.length} shop{filteredShops.length !== 1 ? 's' : ''} matching "{searchQuery}"
               </div>
             )}
-          </div>
+          </div> */}
+
+          <div className="p-4">
+  <input
+    type="text"
+    placeholder="Search shops"
+    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10"
+    value={searchQuery}
+    onChange={(e) => handleSearch(e.target.value)}
+  />
+</div>
+
         </div>
       </header>
 
@@ -719,7 +742,52 @@ export default function ShopList() {
           )}
 
           {/* Shop Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"> */}
+          <div className="space-y-3">
+  {filteredShops.map((shop) => (
+    <div
+      key={shop.id}
+      onClick={() => navigate(`/shops/${shop.id}`)}
+      className="bg-[var(--color-panel)] p-4 rounded-xl border border-white/10 
+                 active:scale-95 transition-transform"
+    >
+      <div className="flex items-center justify-between">
+        
+        {/* LEFT SIDE */}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold truncate">
+            {shop.name}
+          </h3>
+
+          {shop.email && (
+            <p className="text-xs text-gray-400 truncate mt-1">
+              {shop.email}
+            </p>
+          )}
+
+          {shop.contacts[0] && (
+            <p className="text-xs text-gray-400 mt-1">
+              📞 {shop.contacts[0]}
+            </p>
+          )}
+        </div>
+
+        {/* RIGHT SIDE */}
+        <div className="flex flex-col items-end ml-3">
+          <span className="text-xs text-gray-400 mb-1">
+            #{shop.id.slice(0, 5)}
+          </span>
+          <span className="text-[var(--color-gold)] text-lg">
+            ›
+          </span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+          {/* <div className="space-y-4">
+
             {filteredShops.map((shop) => (
               <div
                 key={shop.id}
@@ -734,7 +802,6 @@ export default function ShopList() {
                     </div>
                     <h3 className="text-base md:text-lg font-semibold truncate">
                       {shop.name}
-                      {/* Highlight search term in shop name */}
                       {searchQuery && shop.name.toLowerCase().includes(searchQuery.toLowerCase()) && (
                         <span className="ml-2 text-xs bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full">
                           Match
@@ -748,10 +815,8 @@ export default function ShopList() {
                 </div>
 
                 <div className="mb-5">
-                  {/* CONTACTS Section */}
                   <p className="text-xs text-gray-400 mb-2">CONTACTS</p>
                   <div className="space-y-2">
-                    {/* Phone Contacts */}
                     {shop.contacts.map((phone, i) => (
                       <div
                         key={`phone-${i}`}
@@ -766,7 +831,6 @@ export default function ShopList() {
                         </span>
                         <span className="text-sm font-medium truncate">
                           {phone}
-                          {/* Highlight search term in phone */}
                           {searchQuery && phone.toLowerCase().includes(searchQuery.toLowerCase()) && (
                             <span className="ml-1 text-xs bg-blue-500/20 text-blue-400 px-1 rounded">
                               match
@@ -779,7 +843,6 @@ export default function ShopList() {
                       </div>
                     ))}
 
-                    {/* Email Contact */}
                     {shop.email && (
                       <div
                         className="flex items-center gap-3 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
@@ -793,7 +856,6 @@ export default function ShopList() {
                         </span>
                         <span className="text-sm font-medium truncate">
                           {shop.email}
-                          {/* Highlight search term in email */}
                           {searchQuery && shop.email.toLowerCase().includes(searchQuery.toLowerCase()) && (
                             <span className="ml-1 text-xs bg-green-500/20 text-green-400 px-1 rounded">
                               match
@@ -819,7 +881,7 @@ export default function ShopList() {
                 </button>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </main>
 
