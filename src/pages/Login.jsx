@@ -424,15 +424,19 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [checking, setChecking] = useState(true); // 👈 NEW
 
   const navigate = useNavigate();
 
   /* ================= AUTO LOGIN / REFRESH ================= */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
-
       try {
+       if (!user) {
+          setChecking(false);
+          return;
+        }
+
         // 🔐 Check admin role from DB
         const snap = await get(ref(rtdb, `users/${user.uid}`));
 
@@ -442,12 +446,16 @@ export default function Login() {
           !ADMIN_EMAILS.includes(user.email)
         ) {
           await signOut(auth);
+                    setChecking(false);
+
           return;
         }
 
         navigate("/dashboard", { replace: true });
       } catch {
         await signOut(auth);
+                setChecking(false);
+
       }
     });
 
@@ -516,6 +524,17 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+   /* ================= GLOBAL LOADER ================= */
+  if (checking) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--color-gold)] mb-3"></div>
+        <p className="text-sm text-gray-400">Checking admin access…</p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4">

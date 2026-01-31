@@ -359,13 +359,13 @@ export default function Dashboard() {
 
       {/* ================= HEADER ================= */}
       <div className="flex justify-between items-center p-4 relative">
-        <h2 className="text-sm tracking-widest text-gray-300">
+        <h2 className="text-sm tracking-widest text-amber-300">
           MK MENS WEAR ADMIN
         </h2>
 
         <div className="relative">
           <span
-            className="text-xl cursor-pointer select-none"
+            className="text-xl cursor-pointer select-none text-amber-300"
             onClick={() => setOpenMenu(!openMenu)}
           >
             ⋯
