@@ -475,7 +475,6 @@
 //     </div>
 //   );
 // }
-
 import { useNavigate } from "react-router-dom";
 import CreateShopModal from "../components/CreateShopModal";
 import { useEffect, useState } from "react";
@@ -486,8 +485,6 @@ import {
 import { ref, get, set, child } from "firebase/database";
 import { auth, rtdb, secondaryAuth } from "../firebase";
 import AppHeader from "../components/AppHeader";
-import { deleteUser } from "firebase/auth";
-import { remove } from "firebase/database";
 
 export default function ShopList() {
   const [openModal, setOpenModal] = useState(false);
@@ -541,13 +538,6 @@ export default function ShopList() {
         buttonBg: "bg-blue-600 hover:bg-blue-700",
         iconBg: "bg-blue-100",
       },
-      delete: {
-        bgColor: "bg-red-500/90",
-        icon: "🗑️",
-        titleColor: "text-red-100",
-        buttonBg: "bg-red-600 hover:bg-red-700",
-        iconBg: "bg-red-100",
-      },
     };
 
     const config = alertConfig[alert.type] || alertConfig.info;
@@ -569,17 +559,14 @@ export default function ShopList() {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
-        {/* Backdrop */}
         <div
           className="absolute inset-0 bg-black/60"
           onClick={handleClose}
         ></div>
 
-        {/* Alert Modal */}
         <div
           className={`relative w-full max-w-sm md:max-w-md rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-300 animate-scaleIn`}
         >
-          {/* Header */}
           <div className={`${config.bgColor} p-5 text-center relative`}>
             <div className="absolute  left-1/2 transform -translate-x-1/2">
               <div
@@ -593,13 +580,11 @@ export default function ShopList() {
             </h2>
           </div>
 
-          {/* Body */}
           <div className="bg-white p-6">
             <p className="text-gray-800 text-center text-sm md:text-base mb-6 leading-relaxed">
               {alert.message}
             </p>
 
-            {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               {alert.onCancel && (
                 <button
@@ -643,7 +628,7 @@ export default function ShopList() {
     });
   };
 
-  // Toast notification (for quick success/error messages)
+  // Toast notification
   const showToast = (message, type = "info") => {
     const toast = document.createElement("div");
     const colors = {
@@ -673,7 +658,7 @@ export default function ShopList() {
     }, 3000);
   };
 
-  /* ================= FETCH SHOPS (RTDB) ================= */
+  /* ================= FETCH SHOPS ================= */
   const fetchShops = async () => {
     try {
       const snapshot = await get(child(ref(rtdb), "shops"));
@@ -732,14 +717,13 @@ export default function ShopList() {
     setFilteredShops(filtered);
   };
 
-  /* ================= CREATE SHOP (RTDB) ================= */
+  /* ================= CREATE SHOP ================= */
   const handleCreateShop = async (shop) => {
     try {
       const email =
-       shop.place.toLowerCase().replace(/\s+/g, "_") +
+        shop.place.toLowerCase().replace(/\s+/g, "_") +
         "@mkmenswear.com";
 
-      // ✅ Create shop auth user
       const userCredential = await createUserWithEmailAndPassword(
         secondaryAuth,
         email,
@@ -748,7 +732,6 @@ export default function ShopList() {
 
       const uid = userCredential.user.uid;
 
-      // ✅ Save shop in Realtime Database
       await set(ref(rtdb, "shops/" + uid), {
         place: shop.place,
         phone: shop.phone || "",
@@ -783,51 +766,6 @@ export default function ShopList() {
     return () => unsubscribe();
   }, []);
 
-  /* ================= DELETE SHOP ================= */
-  const handleDeleteShop = (shopId, shopEmail, shopName) => {
-    showSweetAlert(
-      "Delete Shop",
-      `Are you sure you want to delete "${shopName}"?\n\nThis action cannot be undone and all shop data will be permanently removed.`,
-      "delete",
-      {
-        showCancel: true, // ✅ ENABLE CANCEL BUTTON
-        confirmText: "Yes, Delete",
-        cancelText: "Cancel",
-
-        onConfirm: async () => {
-          try {
-            // 🔥 Remove shop data from RTDB
-            await remove(ref(rtdb, `shops/${shopId}`));
-
-            // ⚠️ Try deleting auth user (best effort)
-            if (secondaryAuth.currentUser?.uid === shopId) {
-              try {
-                await deleteUser(secondaryAuth.currentUser);
-              } catch (authError) {
-                console.warn("Auth user deletion failed:", authError);
-              }
-            }
-
-            showToast(`Shop "${shopName}" deleted successfully`, "warning");
-            fetchShops();
-          } catch (error) {
-            console.error("Delete failed:", error);
-            showSweetAlert(
-              "Delete Failed",
-              `Could not delete shop: ${error.message}`,
-              "error",
-            );
-          }
-        },
-
-        onCancel: () => {
-          // ✅ OPTIONAL: Cancel feedback
-          showToast("Delete cancelled", "info");
-        },
-      },
-    );
-  };
-
   /* ================= UPDATE FILTERED SHOPS ================= */
   useEffect(() => {
     if (searchQuery) {
@@ -853,10 +791,8 @@ export default function ShopList() {
 
   return (
     <div className="min-h-screen bg-[var(--color-dark)] text-white flex flex-col">
-      {/* Sweet Alert Modal */}
       <SweetAlert />
 
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-[var(--color-dark)] border-b border-white/10 backdrop-blur-sm bg-opacity-95">
         <AppHeader
           title="Shops"
@@ -872,7 +808,6 @@ export default function ShopList() {
           }
         />
 
-        {/* Search Bar */}
         <div className="p-4">
           <div className="relative">
             <input
@@ -897,10 +832,8 @@ export default function ShopList() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="px-4 py-6 sm:px-6 md:px-8">
-          {/* Stats Card */}
           <div className="mb-6 p-4 bg-gradient-to-r from-[var(--color-panel)] to-[var(--color-panel)]/80 rounded-2xl border border-white/10 shadow-lg">
             <div className="flex items-center justify-between">
               <div className="text-center flex-1">
@@ -932,7 +865,6 @@ export default function ShopList() {
             )}
           </div>
 
-          {/* No Results */}
           {filteredShops.length === 0 && shops.length > 0 && (
             <div className="text-center py-12 px-4">
               <div className="w-24 h-24 mx-auto mb-6 bg-white/5 rounded-full flex items-center justify-center">
@@ -954,7 +886,6 @@ export default function ShopList() {
             </div>
           )}
 
-          {/* Empty State */}
           {shops.length === 0 && !loading && (
             <div className="text-center py-12 px-4">
               <div className="w-24 h-24 mx-auto mb-6 bg-white/5 rounded-full flex items-center justify-center">
@@ -973,29 +904,14 @@ export default function ShopList() {
             </div>
           )}
 
-          {/* Shop List */}
           <div className="space-y-3">
             {filteredShops.map((shop) => (
               <div
                 key={shop.id}
                 onClick={() => navigate(`/shops/${shop.id}`)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  handleDeleteShop(shop.id, shop.email, shop.name);
-                }}
-                onTouchStart={(e) => {
-                  // For mobile long press
-                  e.touchTimer = setTimeout(() => {
-                    handleDeleteShop(shop.id, shop.email, shop.name);
-                  }, 800);
-                }}
-                onTouchEnd={(e) => {
-                  clearTimeout(e.touchTimer);
-                }}
-                className="bg-gradient-to-r from-[var(--color-panel)] to-[var(--color-panel)]/80 p-4 rounded-2xl border border-white/10 hover:border-[var(--color-gold)]/30 active:scale-[0.98] transition-all duration-200 cursor-pointer group shadow-lg hover:shadow-xl hover:shadow-black/20"
+                className="bg-gradient-to-r from-[var(--color-panel)] to-[var(--color-panel)]/80 p-4 rounded-2xl border border-white/10 hover:border-[var(--color-gold)]/30 active:scale-[0.98] transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-black/20"
               >
                 <div className="flex items-center justify-between">
-                  {/* Shop Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
@@ -1014,7 +930,16 @@ export default function ShopList() {
                         </div>
                       )}
 
-                      {shop.contacts[0] && (
+                   
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end ml-3">
+                    {/* <span className="text-xs text-gray-400 mb-2 px-2 py-1 bg-white/5 rounded-lg">
+                      ID: {shop.id.slice(0, 5)}
+                    </span> */}
+
+                       {shop.contacts[0] && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-400">📞</span>
                           <p className="text-xs text-gray-400">
@@ -1022,20 +947,9 @@ export default function ShopList() {
                           </p>
                         </div>
                       )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col items-end ml-3">
-                    <span className="text-xs text-gray-400 mb-2 px-2 py-1 bg-white/5 rounded-lg">
-                      ID: {shop.id.slice(0, 5)}
-                    </span>
                     <span className="text-[var(--color-gold)] text-xl group-hover:translate-x-1 transition-transform">
                       →
                     </span>
-                    <p className="text-[10px] text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Long press to delete
-                    </p>
                   </div>
                 </div>
               </div>
@@ -1044,7 +958,6 @@ export default function ShopList() {
         </div>
       </main>
 
-      {/* Floating Button */}
       <button
         className="fixed bottom-5 right-4 sm:hidden bg-[var(--color-gold)] text-black w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg z-20"
         onClick={() => setOpenModal(true)}
@@ -1052,7 +965,6 @@ export default function ShopList() {
         +
       </button>
 
-      {/* Create Shop Modal */}
       <CreateShopModal
         open={openModal}
         onClose={() => setOpenModal(false)}
