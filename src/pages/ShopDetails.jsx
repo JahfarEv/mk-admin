@@ -942,7 +942,7 @@ export default function AdminShopDetails() {
     { cash: 0, market: 0, card: 0, expense: 0, dailyTotal: 0 },
   );
 
-  const monthlySales = totals.cash + totals.card + totals.expense;
+  const monthlySales = totals.cash + totals.card ;
 
   const monthlyBalance =
     openingBalance + totals.cash + totals.card - totals.market;
