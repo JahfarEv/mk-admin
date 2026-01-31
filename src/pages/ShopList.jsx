@@ -851,7 +851,7 @@ export default function ShopList() {
                   onClick={() => setOpenModal(true)}
                   className="px-4 py-2 bg-[var(--color-gold)] text-black font-semibold rounded-lg hover:bg-[var(--color-gold)]/90 active:scale-95 transition-all"
                 >
-                  + New Shop
+                  + New
                 </button>
               </div>
             </div>

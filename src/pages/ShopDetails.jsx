@@ -2280,6 +2280,48 @@ export default function AdminShopDetails() {
     }));
   };
 
+
+  /* ================= DELETE DAILY ENTRY ================= */
+const deleteDailyEntry = async (report) => {
+  const confirmText = `DELETE ${report.date}`;
+
+  const input = prompt(
+    `Type "${confirmText}" to delete this entry permanently`
+  );
+
+  if (input !== confirmText) {
+    alert("❌ Delete cancelled");
+    return;
+  }
+
+  try {
+    setSaving(true);
+
+    await remove(
+      ref(rtdb, `dailyAccounts/${shopId}/${report.month}/${report.date}`)
+    );
+
+    // Update local state
+    const updatedAllReports = allReports.filter(
+      (r) => r.id !== report.id
+    );
+
+    const currentMonth = getCurrentMonth();
+    const updatedCurrentMonthReports = updatedAllReports.filter(
+      (r) => r.month === currentMonth
+    );
+
+    setAllReports(updatedAllReports);
+    setReports(updatedCurrentMonthReports);
+
+    alert("✅ Daily entry deleted successfully");
+  } catch (error) {
+    alert("❌ Failed to delete entry: " + error.message);
+  } finally {
+    setSaving(false);
+  }
+};
+
   /* ================= PASSWORD CHANGE FUNCTION ================= */
   const handlePasswordChange = async ({ newPassword }) => {
     try {
@@ -2622,7 +2664,7 @@ export default function AdminShopDetails() {
                               `₹${(report.cash + report.card).toLocaleString()}`
                             )}
                           </td>
-                          
+{/*                           
                           <td className="p-3 text-center">
                             {editingId === report.id ? (
                               <div className="flex gap-1 justify-center">
@@ -2651,7 +2693,47 @@ export default function AdminShopDetails() {
                                 Edit
                               </button>
                             )}
-                          </td>
+                          </td> */}
+                          <td className="p-3 text-center">
+  {editingId === report.id ? (
+    <div className="flex gap-1 justify-center">
+      <button
+        onClick={() => saveEdit(report.id, report.date, report.month)}
+        disabled={saving}
+        className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 rounded disabled:opacity-50"
+        title="Save"
+      >
+        ✓
+      </button>
+      <button
+        onClick={cancelEdit}
+        className="bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1 rounded"
+        title="Cancel"
+      >
+        ✕
+      </button>
+    </div>
+  ) : (
+    <div className="flex gap-1 justify-center">
+      <button
+        onClick={() => startEdit(report)}
+        className="bg-[var(--color-gold)] text-black text-xs px-3 py-1 rounded"
+        title="Edit"
+      >
+        Edit
+      </button>
+      <button
+        onClick={() => deleteDailyEntry(report)}
+        disabled={saving}
+        className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded disabled:opacity-50"
+        title="Delete"
+      >
+        Delete
+      </button>
+    </div>
+  )}
+</td>
+
                         </tr>
                       ))}
                     </tbody>

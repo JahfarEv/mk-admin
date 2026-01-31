@@ -404,7 +404,6 @@
 //   );
 // }
 
-
 import { useState, useEffect } from "react";
 import {
   signInWithEmailAndPassword,
@@ -412,15 +411,12 @@ import {
   signOut,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { ref, get, set } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 import { auth, rtdb } from "../firebase";
 
-/* ================= ADMIN EMAIL WHITELIST ================= */
-const ADMIN_EMAILS = [
-  "mkmenswearblr@gmail.com", // ✅ your real admin email
-  // "admin@mkmenswear.com"  // optional backup
-];
+/* ✅ OPTIONAL EMAIL CHECK (extra safety) */
+const ADMIN_EMAILS = ["mkmenswearblr@gmail.com"];
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -431,37 +427,28 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  /* ================= AUTO LOGIN / REFRESH SAFE ================= */
+  /* ================= AUTO LOGIN / REFRESH ================= */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) return;
 
-      // ❌ Block non-admin emails
-      if (!ADMIN_EMAILS.includes(user.email)) {
+      try {
+        // 🔐 Check admin role from DB
+        const snap = await get(ref(rtdb, `users/${user.uid}`));
+
+        if (
+          !snap.exists() ||
+          snap.val().role !== "admin" ||
+          !ADMIN_EMAILS.includes(user.email)
+        ) {
+          await signOut(auth);
+          return;
+        }
+
+        navigate("/dashboard", { replace: true });
+      } catch {
         await signOut(auth);
-        return;
       }
-
-      const userRef = ref(rtdb, `users/${user.uid}`);
-      const snap = await get(userRef);
-
-      // ✅ AUTO-RECREATE ADMIN IF DELETED
-      if (!snap.exists()) {
-        await set(userRef, {
-          role: "admin",
-          email: user.email,
-          createdAt: Date.now(),
-        });
-      }
-
-      // ✅ FINAL SAFETY CHECK
-      const roleSnap = await get(userRef);
-      if (roleSnap.val()?.role !== "admin") {
-        await signOut(auth);
-        return;
-      }
-
-      navigate("/dashboard", { replace: true });
     });
 
     return () => unsubscribe();
@@ -487,20 +474,17 @@ export default function Login() {
       const res = await signInWithEmailAndPassword(auth, email, password);
       const user = res.user;
 
-      const userRef = ref(rtdb, `users/${user.uid}`);
-      const snap = await get(userRef);
+      // 🔐 DO NOT CREATE — ONLY VERIFY
+      const snap = await get(ref(rtdb, `users/${user.uid}`));
 
-      // ✅ CREATE ADMIN NODE IF MISSING
-      if (!snap.exists()) {
-        await set(userRef, {
-          role: "admin",
-          email: user.email,
-          createdAt: Date.now(),
-        });
+      if (!snap.exists() || snap.val().role !== "admin") {
+        await signOut(auth);
+        setError("Admin access revoked");
+        return;
       }
 
       navigate("/dashboard", { replace: true });
-    } catch (err) {
+    } catch {
       setError("Invalid admin email or password");
     } finally {
       setLoading(false);
@@ -510,12 +494,12 @@ export default function Login() {
   /* ================= FORGOT PASSWORD ================= */
   const handleForgotPassword = async () => {
     if (!email) {
-      setError("Please enter your admin email first");
+      setError("Enter admin email first");
       return;
     }
 
     if (!ADMIN_EMAILS.includes(email)) {
-      setError("Password reset allowed only for admin email");
+      setError("Password reset allowed only for admin");
       return;
     }
 
@@ -525,12 +509,9 @@ export default function Login() {
       setInfo("");
 
       await sendPasswordResetEmail(auth, email);
-
-      setInfo(
-        "Password reset link sent. Please check your email (Inbox / Spam)."
-      );
-    } catch (err) {
-      setError("Failed to send password reset email");
+      setInfo("Password reset link sent (Inbox / Spam)");
+    } catch {
+      setError("Failed to send reset email");
     } finally {
       setLoading(false);
     }
@@ -540,64 +521,43 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm bg-panel text-white rounded-3xl p-6 shadow-xl">
 
-        {/* TITLE */}
         <h1 className="text-3xl font-serif text-center text-gold mb-8">
           MK ADMIN
         </h1>
 
-        {/* EMAIL */}
         <input
           type="email"
           placeholder="Admin Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-4 py-3 rounded-xl bg-transparent border border-gold/40 focus:outline-none focus:border-gold"
+          className="w-full mb-4 px-4 py-3 rounded-xl bg-transparent border border-gold/40"
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-6 px-4 py-3 rounded-xl bg-transparent border border-gold/40 focus:outline-none focus:border-gold"
+          className="w-full mb-6 px-4 py-3 rounded-xl bg-transparent border border-gold/40"
         />
 
-        {/* ERROR */}
-        {error && (
-          <p className="text-red-400 text-sm mb-3 text-center">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+        {info && <p className="text-green-400 text-sm text-center">{info}</p>}
 
-        {/* INFO */}
-        {info && (
-          <p className="text-green-400 text-sm mb-3 text-center">
-            {info}
-          </p>
-        )}
-
-        {/* LOGIN BUTTON */}
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full bg-gold text-black py-3 rounded-xl font-semibold tracking-wide disabled:opacity-60 active:scale-95 transition"
+          className="w-full bg-gold text-black py-3 rounded-xl font-semibold mt-4"
         >
           {loading ? "Logging in..." : "LOGIN"}
         </button>
 
-        {/* FORGOT PASSWORD */}
         <button
           onClick={handleForgotPassword}
-          disabled={loading}
-          className="w-full text-center text-sm mt-4 text-[var(--color-gold)]"
+          className="w-full text-sm mt-4 text-gold"
         >
           Forgot Password?
         </button>
-
-        <p className="text-center text-xs mt-4 text-gray-500">
-          Admin access only
-        </p>
       </div>
     </div>
   );
