@@ -2166,10 +2166,9 @@ export default function AdminShopDetails() {
   };
 
   const confirmDeleteShop = async () => {
-    if (deleteConfirmText !== `DELETE ${shop?.place}`) {
-      alert(`Please type "DELETE ${shop?.place}" to confirm`);
-      return;
-    }
+    if (alert(`Are you sure you want to delete "${shop?.place}"? This action cannot be undone.`)) {
+    return;
+  }
 
     try {
       setSaving(true);
@@ -2355,92 +2354,58 @@ const deleteDailyEntry = async (report) => {
     <div className="min-h-screen bg-[var(--color-dark)] text-white flex flex-col">
       {/* 🔹 DELETE CONFIRMATION MODAL */}
       {showDeleteAlert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowDeleteAlert(false)}></div>
-          
-          <div className="relative w-full max-w-sm md:max-w-md rounded-2xl overflow-hidden shadow-2xl bg-white animate-scaleIn">
-            <div className="bg-red-500/90 p-5 text-center relative">
-              <div className="absolute left-1/2 transform -translate-x-1/2">
-                <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-2xl shadow-lg">
-                  🗑️
-                </div>
-              </div>
-              <h2 className="text-xl font-bold mt-16 mb-2 text-red-100">
-                Delete Shop
-              </h2>
-            </div>
-            
-            <div className="p-6">
-              <div className="text-center mb-4">
-                {/* <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-red-100 rounded-full">
-                  <span className="text-3xl text-red-500">⚠️</span>
-                </div> */}
-                <p className="text-gray-800 text-lg font-semibold">
-                  Are you absolutely sure?
-                </p>
-              </div>
-{/*               
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                <p className="text-red-800 text-center text-sm mb-3">
-                  You are about to permanently delete:
-                </p>
-                <div className="text-center mb-3">
-                  <p className="text-red-600 font-bold text-lg">{shop?.place}</p>
-                  <p className="text-gray-600 text-sm">{shop?.email}</p>
-                  <p className="text-gray-600 text-sm">{shop?.phone || "No phone"}</p>
-                </div>
-                <p className="text-red-700 text-center text-xs font-medium">
-                  This action cannot be undone!
-                </p>
-              </div> */}
-              
-              <div className="mb-6">
-                <p className="text-sm text-gray-600 mb-3 text-center">
-                  To confirm, type <span className="font-bold text-red-600">"DELETE {shop?.place}"</span>
-                </p>
-                <input
-                  type="text"
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  placeholder={`Type "DELETE ${shop?.place}"`}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-center"
-                  autoFocus
-                />
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => {
-                    setShowDeleteAlert(false);
-                    setDeleteConfirmText("");
-                  }}
-                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 font-semibold rounded-xl hover:bg-gray-300 active:scale-95 transition-all duration-200"
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDeleteShop}
-                  disabled={saving || deleteConfirmText !== `DELETE ${shop?.place}`}
-                  className={`flex-1 px-4 py-3 bg-red-600 text-white font-semibold rounded-xl active:scale-95 transition-all duration-200 ${
-                    (deleteConfirmText !== `DELETE ${shop?.place}`) || saving
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:bg-red-700'
-                  }`}
-                >
-                  {saving ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      Deleting...
-                    </span>
-                  ) : (
-                    "Delete Forever"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
+  <div className="absolute inset-0 bg-black/60" onClick={() => setShowDeleteAlert(false)}></div>
+  
+  <div className="relative w-full max-w-xs rounded-xl shadow-2xl bg-white animate-scaleIn">
+    {/* Header */}
+    <div className="p-4 text-center">
+      <div className="mx-auto w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-3">
+        <span className="text-2xl">🗑️</span>
+      </div>
+      <h2 className="text-lg font-bold text-gray-800">Delete Shop</h2>
+    </div>
+    
+    {/* Content */}
+    <div className="px-5 pb-5">
+      <div className="text-center mb-5">
+        <p className="text-gray-600 text-sm">
+          Are you sure you want to delete <span className="font-semibold text-gray-800">{shop?.place}</span>? 
+          This action cannot be undone.
+        </p>
+      </div>
+      
+      {/* Buttons - Single line */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            setShowDeleteAlert(false);
+          }}
+          className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 active:scale-95 transition-all duration-200"
+          disabled={saving}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={confirmDeleteShop}
+          disabled={saving}
+          className={`flex-1 px-4 py-2.5 bg-red-500 text-white font-medium rounded-lg active:scale-95 transition-all duration-200 ${
+            saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'
+          }`}
+        >
+          {saving ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              Deleting...
+            </span>
+          ) : (
+            "Delete"
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
       )}
 
       {/* 🔹 APP HEADER */}
